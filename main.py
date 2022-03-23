@@ -8,39 +8,26 @@ import math
 
 #### Iterative solution
 def parens_match_iterative(mylist):
-    """
-    Implement the iterative solution to the parens matching problem.
-    This function should call `iterate` using the `parens_update` function.
-    
-    Params:
-      mylist...a list of strings
-    Returns
-      True if the parenthesis are matched, False otherwise
-      
-    e.g.,
-    >>>parens_match_iterative(['(', 'a', ')'])
-    True
-    >>>parens_match_iterative(['('])
-    False
-    """
-    ### TODO
-    pass
-
-
+  x = iterate(parens_update, 0, mylist)
+  if (x == 0):
+    return True
+  else:
+    return False
+  
 def parens_update(current_output, next_input):
-    """
-    This function will be passed to the `iterate` function to 
-    solve the balanced parenthesis problem.
-    
-    Like all functions used by iterate, it takes in:
-    current_output....the cumulative output thus far (e.g., the running sum when doing addition)
-    next_input........the next value in the input
-    
-    Returns:
-      the updated value of `current_output`
-    """
-    ###TODO
-    pass
+  if (next_input == "("):
+    current_output += 1
+  elif (current_output < 1 and next_input == ")"):
+    current_output = -99
+  elif (next_input == ")"):
+    current_output -= 1
+  return current_output
+
+def iterate(f, x, a):
+  if len(a) == 0:
+    return x
+  else:
+    return iterate(f, f(x, a[0]), a[1:])
 
 
 def test_parens_match_iterative():
@@ -52,24 +39,29 @@ def test_parens_match_iterative():
 #### Scan solution
 
 def parens_match_scan(mylist):
-    """
-    Implement a solution to the parens matching problem using `scan`.
-    This function should make one call each to `scan`, `map`, and `reduce`
+  m = list(map(lambda x:paren_map(x), mylist))
+  for i in m:
+    if (i == -1):
+      return False
+    if (i == 1):
+      break
+
+  s = scan(plus, 0, m)[0]
+  r = reduce(min_f, 0, s)
+  if (r != 0):
+    return False
+  else:
+    return True
+
+def reduce(f, id_, a):
+  if (len(a) == 0):
+    return id_
+  elif (len(a) == 1):
+    return a[0]
+  else:
+    res = f(reduce(f, id_, a[:len(a)//2]), reduce(f, id_, a[len(a)//2:]))
+    return res
     
-    Params:
-      mylist...a list of strings
-    Returns
-      True if the parenthesis are matched, False otherwise
-      
-    e.g.,
-    >>>parens_match_scan(['(', 'a', ')'])
-    True
-    >>>parens_match_scan(['('])
-    False
-    
-    """
-    ###TODO
-    pass
 
 def scan(f, id_, a):
     """
@@ -82,6 +74,9 @@ def scan(f, id_, a):
             [reduce(f, id_, a[:i+1]) for i in range(len(a))],
              reduce(f, id_, a)
            )
+
+def plus(x, y):
+  return x + y
 
 def paren_map(x):
     """
@@ -133,17 +128,23 @@ def parens_match_dc(mylist):
     return n_unmatched_left==0 and n_unmatched_right==0
 
 def parens_match_dc_helper(mylist):
-    """
-    Recursive, divide and conquer solution to the parens match problem.
-    
-    Returns:
-      tuple (R, L), where R is the number of unmatched right parentheses, and
-      L is the number of unmatched left parentheses. This output is used by 
-      parens_match_dc to return the final True or False value
-    """
-    ###TODO
-    pass
-    
+  if len(mylist) == 0:
+    return (0, 0)
+  elif len(mylist) == 1:
+    if (mylist[0] == "("):
+      return (0, 1)
+    elif (mylist[0] == ")"):
+      return (1, 0)
+    else:
+      return (0, 0)
+  else:
+    rr, rl = parens_match_dc_helper(mylist[(len(mylist)//2):])
+    ll, lr = parens_match_dc_helper(mylist[(len(mylist)//2):])
+    if ll == 0 and rr == 0 and lr > 0 and rl > 0:
+      return (lr, rl)
+    x = rr - ll
+    y = rl - lr
+    return (x, y)    
 
 def test_parens_match_dc():
     assert parens_match_dc(['(', ')']) == True
